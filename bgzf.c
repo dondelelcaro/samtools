@@ -389,7 +389,7 @@ typedef struct mtaux_t {
 
 static int worker_aux(worker_t *w)
 {
-	int i, tmp, stop = 0;
+	int i, stop = 0;
 	// wait for condition: to process or all done
 	pthread_mutex_lock(&w->mt->lock);
 	while (!w->toproc && !w->mt->done)
@@ -406,7 +406,7 @@ static int worker_aux(worker_t *w)
 		memcpy(w->mt->blk[i], w->buf, clen);
 		w->mt->len[i] = clen;
 	}
-	tmp = __sync_fetch_and_add(&w->mt->proc_cnt, 1);
+	(void) __sync_fetch_and_add(&w->mt->proc_cnt, 1);
 	return 0;
 }
 
@@ -576,7 +576,7 @@ int bgzf_close(BGZF* fp)
 		fp->compress_level = -1;
 		block_length = deflate_block(fp, 0); // write an empty block
 		count = fwrite(fp->compressed_block, 1, block_length, fp->fp);
-		if (fflush(fp->fp) != 0) {
+		if (count != block_length || fflush(fp->fp) != 0) {
 			fp->errcode |= BGZF_ERR_IO;
 			return -1;
 		}
