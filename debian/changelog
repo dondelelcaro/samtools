@@ -1,3 +1,9 @@
+samtools (0.1.18-3~git.1) unstable; urgency=low
+
+  * Git packaging
+
+ -- Don Armstrong <don@debian.org>  Tue, 06 Nov 2012 17:25:10 -0800
+
 samtools (0.1.18-3) unstable; urgency=low
 
   * upload 0.1.18-2 closed the wrong bug, correction: 
