@@ -86,7 +86,7 @@ typedef struct {
     int rflag_require, rflag_filter;
 	int openQ, extQ, tandemQ, min_support; // for indels
 	double min_frac; // for indels
-	char *reg, *pl_list, *fai_fname;
+	char *reg, *pl_list, *fai_fname, *bcf_fname;
 	faidx_t *fai;
 	void *bed, *rghash;
 } mplp_conf_t;
@@ -266,7 +266,7 @@ static int mpileup(mplp_conf_t *conf, int n, char **fn)
 		kstring_t s;
 		bh = calloc(1, sizeof(bcf_hdr_t));
 		s.l = s.m = 0; s.s = 0;
-		bp = bcf_open("-", (conf->flag&MPLP_NO_COMP)? "wu" : "w");
+		bp = bcf_open(conf->bcf_fname, (conf->flag&MPLP_NO_COMP)? "wu" : "w");
 		for (i = 0; i < h->n_targets; ++i) {
 			kputs(h->target_name[i], &s);
 			kputc('\0', &s);
@@ -495,13 +495,15 @@ int bam_mpileup(int argc, char *argv[])
 	mplp.openQ = 40; mplp.extQ = 20; mplp.tandemQ = 100;
 	mplp.min_frac = 0.002; mplp.min_support = 1;
 	mplp.flag = MPLP_NO_ORPHAN | MPLP_REALN;
+    mplp.bcf_fname="-";
     static struct option lopts[] = 
     {
         {"rf",1,0,1},   // require flag
         {"ff",1,0,2},   // filter flag
+        {"output",1,0,(int)'c'}, // output flag
         {0,0,0,0}
     };
-	while ((c = getopt_long(argc, argv, "Agf:r:l:M:q:Q:uaRC:BDSd:L:b:P:po:e:h:Im:F:EG:6OsV1:2:",lopts,NULL)) >= 0) {
+	while ((c = getopt_long(argc, argv, "Agf:r:l:M:q:Q:uaRC:BDSd:L:b:P:po:e:h:Im:F:EG:6OsV1:2:c:",lopts,NULL)) >= 0) {
 		switch (c) {
         case  1 : mplp.rflag_require = strtol(optarg,0,0); break;
         case  2 : mplp.rflag_filter  = strtol(optarg,0,0); break;
@@ -528,6 +530,7 @@ int bam_mpileup(int argc, char *argv[])
 		case 'R': mplp.flag |= MPLP_IGNORE_RG; break;
 		case 's': mplp.flag |= MPLP_PRINT_MAPQ; break;
 		case 'O': mplp.flag |= MPLP_PRINT_POS; break;
+		case 'c': mplp.bcf_fname = strdup(optarg); break;
 		case 'C': mplp.capQ_thres = atoi(optarg); break;
 		case 'M': mplp.max_mq = atoi(optarg); break;
 		case 'q': mplp.min_mq = atoi(optarg); break;
@@ -582,6 +585,7 @@ int bam_mpileup(int argc, char *argv[])
 		fprintf(stderr, "       -s           output mapping quality (disabled by -g/-u)\n");
 		fprintf(stderr, "       -S           output per-sample strand bias P-value in BCF (require -g/-u)\n");
 		fprintf(stderr, "       -u           generate uncompress BCF output\n");
+		fprintf(stderr, "       -c, --output=FILE output filename [stdout]\n");
 		fprintf(stderr, "\nSNP/INDEL genotype likelihoods options (effective with `-g' or `-u'):\n\n");
 		fprintf(stderr, "       -e INT       Phred-scaled gap extension seq error probability [%d]\n", mplp.extQ);
 		fprintf(stderr, "       -F FLOAT     minimum fraction of gapped reads for candidates [%g]\n", mplp.min_frac);

@@ -186,6 +186,8 @@ samtools mpileup
 .IR minBaseQ ]
 .RB [ \-q
 .IR minMapQ ]
+.RB [ \-c
+.IR Output file [stdout] ]
 .I in.bam
 .RI [ in2.bam
 .RI [ ... ]]
@@ -285,6 +287,9 @@ Output per-sample Phred-scaled strand bias P-value
 Similar to
 .B -g
 except that the output is uncompressed BCF, which is preferred for piping.
+.TP
+.BR \-c ", " \-\-output =\fIFILE\fR
+File to output bcf (vcf with \fB\-g\fR) to; default is stdout.
 
 .TP
 .B Options for Genotype Likelihood Computation (for -g or -u):
